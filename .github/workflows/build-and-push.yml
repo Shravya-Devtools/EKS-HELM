@@ -1,6 +1,6 @@
 # ==============================================================================
 # File: .github/workflows/build-and-push.yml
-# Purpose: GitHub Actions workflow to build application code and push to private ECR
+# Purpose: Builds application code and pushes to private ECR (mpsh-app)
 # ==============================================================================
 
 name: Build and Push App to AWS ECR
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials (OIDC or Secrets)
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
