@@ -1,0 +1,43 @@
+# ==============================================================================
+# File: .github/workflows/mirror-octopus-images.yml
+# Purpose: Pulls public Octopus images and pushes them to private AWS ECR mirror
+# ==============================================================================
+
+name: Mirror Octopus Images to Private ECR
+
+on:
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  mirror-images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Pull, Tag, and Push Octopus Images
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          # 1. Kubernetes Agent Core
+          docker pull octopusdeploy/kubernetes-agent:latest
+          docker tag octopusdeploy/kubernetes-agent:latest $REGISTRY/octopusdeploy/kubernetes-agent:latest
+          docker push $REGISTRY/octopusdeploy/kubernetes-agent:latest
+
+          # 2. Kubernetes Agent Tentacle
+          docker pull octopusdeploy/kubernetes-agent-tentacle:latest
+          docker tag octopusdeploy/kubernetes-agent-tentacle:latest $REGISTRY/octopusdeploy/kubernetes-agent-tentacle:latest
+          docker push $REGISTRY/octopusdeploy/kubernetes-agent-tentacle:latest
+
+          # 3. Kubernetes Agent Tools-Base
+          docker pull octopusdeploy/kubernetes-agent-tools-base:1.29
+          docker tag octopusdeploy/kubernetes-agent-tools-base:1.29 $REGISTRY/octopusdeploy/kubernetes-agent-tools-base:1.29
+          docker push $REGISTRY/octopusdeploy/kubernetes-agent-tools-base:1.29
